@@ -33,7 +33,7 @@
 # NA
 #
 # CVS_ID:
-# $Id: ices2txt,v 1.1 2010-02-11 12:12:33 steingod Exp $
+# $Id: ices2txt,v 1.2 2010-02-12 14:37:22 steingod Exp $
 #
 
 use strict;
@@ -88,10 +88,11 @@ sub decoderecords {
     my($tmplat,$tmplon);
     my($year,$month,$mday,$hour,$minute);
     my($bottomdepth,$depth,$salinity,$temperature);
-    my($isnegative,$ismissing);
+    my($isnegative,$ismissing,$masterfound);
 
     $ismaster = 0;
     $recnr = 0;
+    $masterfound = 0;
 
     open(FH,">>$outputfile") or die "Could not open $outputfile for
     writing...\n";
@@ -104,22 +105,29 @@ sub decoderecords {
 	    $ismaster = 0;
 	} elsif ($record =~ /01\r$/) {
 	    $ismaster = 1;
+	    $masterfound = 1;
 	} else {
 	    warn "Can't handle this record type:\n\t$record\n";
+	    $masterfound = 0;
 	    next;
 	}
+	next unless ($masterfound);
 
 	$country = substr($record,0,2);
 	$ship = substr($record,2,2);
 	$station = substr($record,4,4);
 	$lat = substr($record,8,4);
+	next if ($lat =~ /^\D+/);
 	$lon = substr($record,12,5);
+	next if ($lon =~ /^\D+/);
 	if ($ismaster) {
 	    $declat = substr($record,64,2);
-	    $declat = 0 if ($declat =~ /\D+/);
+	    $declat = 0 if ($declat =~ /^\D+/);
 	    $declon = substr($record,66,2);
-	    $declon = 0 if ($declon =~ /\D+/);
+	    $declon = 0 if ($declon =~ /^\D+/);
 	    $minute = substr($record,68,2);
+	    $minute = 0 if ($minute =~ /^\D+/);
+	    $minute = 0 if ($minute > 60);
 	    $bottomdepth = -999.;
 	}
 	$tmplat = substr($lat,2,2)/60.+($declat/100.);
@@ -135,9 +143,16 @@ sub decoderecords {
 	} else {
 	    $year += 2000;
 	}
+	if ($year > 2100) {
+	    print "Time decoding failure on\n\t$record\n";
+	    next;
+	}
 	$month = substr($record,21,2);
+	next if ($month =~ /^\D+/);
 	$mday = substr($record,23,2);
+	next if ($mday =~ /^\D+/);
 	$hour = substr($record,25,2);
+	next if ($hour =~ /^\D+/);
 	if (!$ismaster) {
 	    $isdepth = substr($record,40,1);
 	    unless ($isdepth =~ /p/) {
