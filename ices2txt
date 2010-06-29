@@ -34,10 +34,12 @@
 # Øystein Godøy, METNO/FOU, 09.09.2009 
 #
 # MODIFIED:
-# NA
+# Øystein Godøy, METNO/FOU, 29.06.2010: Added more data received from Knut
+# Barthel, as well as optional \r or \n end of lines as the newly received
+# files differ from earlier files.
 #
 # CVS_ID:
-# $Id: ices2txt,v 1.3 2010-02-15 09:24:16 steingod Exp $
+# $Id: ices2txt,v 1.4 2010-06-29 16:33:12 steingod Exp $
 #
 
 use strict;
@@ -60,7 +62,24 @@ my @files=(
     "M03.dat",
     "M04.dat",
     "M05.dat",
-    "M06.dat"
+    "M06.dat",
+    "Fra_Knut_Barthel/M07-165.II",
+    "Fra_Knut_Barthel/M07-166.II",
+    "Fra_Knut_Barthel/M07-167.II",
+    "Fra_Knut_Barthel/M07-168.II",
+    "Fra_Knut_Barthel/M07-169.II",
+    "Fra_Knut_Barthel/M07-170.II",
+    "Fra_Knut_Barthel/M08-172.II",
+    "Fra_Knut_Barthel/M08-173.II",
+    "Fra_Knut_Barthel/M08-174.II",
+    "Fra_Knut_Barthel/M08-175.II",
+    "Fra_Knut_Barthel/M08-176.II",
+    "Fra_Knut_Barthel/M09-177.II",
+    "Fra_Knut_Barthel/M09-178.II",
+    "Fra_Knut_Barthel/M09-179.II",
+    "Fra_Knut_Barthel/M09-180.II",
+    "Fra_Knut_Barthel/M09-181.II",
+    "Fra_Knut_Barthel/M09-182.II"
 );
 my $outputfile="ows_mike_hydrography.txt";
 my $maxdepthatstation = 2500;
@@ -105,9 +124,9 @@ sub decoderecords {
 	$recnr++;
 	next if ($record =~ /^ /);
 
-	if ($record =~ /03\r$/) {
+	if ($record =~ /03(\r|\n)$/) {
 	    $ismaster = 0;
-	} elsif ($record =~ /01\r$/) {
+	} elsif ($record =~ /01(\r|\n)$/) {
 	    $ismaster = 1;
 	    $masterfound = 1;
 	} else {
